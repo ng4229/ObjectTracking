@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+#include "ImageLibrary.h"
 
 // CObjectTrackingDlg dialog
 class CObjectTrackingDlg : public CDialogEx
