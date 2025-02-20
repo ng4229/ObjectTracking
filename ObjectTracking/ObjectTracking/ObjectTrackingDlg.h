@@ -20,6 +20,14 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 
+public:
+	cv::Mat m_matImage{};
+	BITMAPINFO* m_pBitmapInfo{};
+	CImage m_image{};
+
+	
+	void CreateBitmapInfo(int nWidth, int nHeight, int nBpp); // Bitmap 정보를 생성하는 함수.
+	void DrawImage(); // 그리는 작업을 수행하는 함수.
 
 // Implementation
 protected:
@@ -33,4 +41,5 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+	afx_msg void OnBnClickedBtnImgLoad();
 };

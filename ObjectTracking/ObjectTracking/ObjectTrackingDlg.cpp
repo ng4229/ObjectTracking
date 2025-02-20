@@ -61,11 +61,61 @@ void CObjectTrackingDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 }
 
+void CObjectTrackingDlg::CreateBitmapInfo(int nWidth, int nHeight, int nBpp)
+{
+	if (m_pBitmapInfo != NULL)
+	{
+		delete m_pBitmapInfo;
+		m_pBitmapInfo = NULL;
+	}
+
+	if (nBpp == 8)
+		m_pBitmapInfo = (BITMAPINFO*) new BYTE[sizeof(BITMAPINFO) + 255 * sizeof(RGBQUAD)];
+	else // 24 or 32bit
+		m_pBitmapInfo = (BITMAPINFO*) new BYTE[sizeof(BITMAPINFO)];
+
+	m_pBitmapInfo->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	m_pBitmapInfo->bmiHeader.biPlanes = 1;
+	m_pBitmapInfo->bmiHeader.biBitCount = nBpp;
+	m_pBitmapInfo->bmiHeader.biCompression = BI_RGB;
+	m_pBitmapInfo->bmiHeader.biSizeImage = 0;
+	m_pBitmapInfo->bmiHeader.biXPelsPerMeter = 0;
+	m_pBitmapInfo->bmiHeader.biYPelsPerMeter = 0;
+	m_pBitmapInfo->bmiHeader.biClrUsed = 0;
+	m_pBitmapInfo->bmiHeader.biClrImportant = 0;
+
+	if (nBpp == 8)
+	{
+		for (int i = 0; i < 256; i++)
+		{
+			m_pBitmapInfo->bmiColors[i].rgbBlue = (BYTE)i;
+			m_pBitmapInfo->bmiColors[i].rgbGreen = (BYTE)i;
+			m_pBitmapInfo->bmiColors[i].rgbRed = (BYTE)i;
+			m_pBitmapInfo->bmiColors[i].rgbReserved = 0;
+		}
+	}
+
+	m_pBitmapInfo->bmiHeader.biWidth = nWidth;
+	m_pBitmapInfo->bmiHeader.biHeight = -nHeight;
+}
+
+void CObjectTrackingDlg::DrawImage()
+{
+	CClientDC dc(GetDlgItem(IDC_PICTURE_VIEW));
+
+	CRect rect;
+	GetDlgItem(IDC_PICTURE_VIEW)->GetClientRect(&rect);
+
+	SetStretchBltMode(dc.GetSafeHdc(), COLORONCOLOR);
+	StretchDIBits(dc.GetSafeHdc(), 0, 0, rect.Width(), rect.Height(), 0, 0, m_matImage.cols, m_matImage.rows, m_matImage.data, m_pBitmapInfo, DIB_RGB_COLORS, SRCCOPY);
+}
+
 BEGIN_MESSAGE_MAP(CObjectTrackingDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_GETMINMAXINFO()
+	ON_BN_CLICKED(IDC_BTN_IMG_LOAD, &CObjectTrackingDlg::OnBnClickedBtnImgLoad)
 END_MESSAGE_MAP()
 
 
@@ -163,4 +213,23 @@ void CObjectTrackingDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 	//lpMMI->ptMaxTrackSize = CPoint(1400, 1000);
 
 	CDialogEx::OnGetMinMaxInfo(lpMMI);
+}
+
+
+void CObjectTrackingDlg::OnBnClickedBtnImgLoad()
+{
+	CFileDialog fileDlg(TRUE, NULL, NULL, OFN_READONLY, _T("image file(*.jpg;*.bmp;*.png;)|*.jpg;*.bmp;*.png;|All Files(*.*)|*.*||"));
+	if (fileDlg.DoModal() == IDOK)
+	{
+		CString path = fileDlg.GetPathName();
+
+		CT2CA pszString(path);
+		std::string strPath(pszString);
+
+		m_matImage = cv::imread(strPath, cv::IMREAD_UNCHANGED);
+
+		CreateBitmapInfo(m_matImage.cols, m_matImage.rows, m_matImage.channels() * 8);
+
+		DrawImage();
+	}
 }
