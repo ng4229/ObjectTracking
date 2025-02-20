@@ -65,6 +65,7 @@ BEGIN_MESSAGE_MAP(CObjectTrackingDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_GETMINMAXINFO()
 END_MESSAGE_MAP()
 
 
@@ -99,7 +100,6 @@ BOOL CObjectTrackingDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
-	cv::Mat Image = cv::imread("wallpaperbetter.jpg", cv::IMREAD_COLOR);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -153,3 +153,14 @@ HCURSOR CObjectTrackingDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CObjectTrackingDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	lpMMI->ptMinTrackSize = CPoint(1920, 1080);
+	//lpMMI->ptMaxTrackSize = CPoint(1400, 1000);
+
+	CDialogEx::OnGetMinMaxInfo(lpMMI);
+}
