@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by ObjectTracking.rc
+// Microsoft Visual C++에서 생성한 포함 파일입니다.
+// ObjectTracking.rc에서 사용되고 있습니다.
 //
 #define IDM_ABOUTBOX                    0x0010
 #define IDD_ABOUTBOX                    100
@@ -9,6 +9,8 @@
 #define IDR_MAINFRAME                   128
 #define IDC_PICTURE_VIEW                1000
 #define IDC_BTN_IMG_LOAD                1001
+#define IDC_BTN_IMG_LOAD2               1002
+#define IDC_BTN_IMG_SAVE                1002
 
 // Next default values for new objects
 // 
