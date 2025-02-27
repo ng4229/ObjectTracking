@@ -7,6 +7,10 @@
 #include "ObjectTracking.h"
 #include "ObjectTrackingDlg.h"
 #include "afxdialogex.h"
+// 메모리누수 점검 헤더
+#define _CRTDBG_MAP_ALLOC
+#include <cstdlib>
+#include <crtdbg.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -63,9 +67,9 @@ void CObjectTrackingDlg::DoDataExchange(CDataExchange* pDX)
 
 void CObjectTrackingDlg::CreateBitmapInfo(int nWidth, int nHeight, int nBpp)
 {
-	if (m_pBitmapInfo != NULL)
+	if (m_pBitmapInfo != nullptr)
 	{
-		delete m_pBitmapInfo;
+		delete[] reinterpret_cast<BYTE*>(m_pBitmapInfo);
 		m_pBitmapInfo = NULL;
 	}
 
@@ -116,6 +120,8 @@ BEGIN_MESSAGE_MAP(CObjectTrackingDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_WM_GETMINMAXINFO()
 	ON_BN_CLICKED(IDC_BTN_IMG_LOAD, &CObjectTrackingDlg::OnBnClickedBtnImgLoad)
+	ON_BN_CLICKED(IDC_BTN_IMG_SAVE, &CObjectTrackingDlg::OnBnClickedBtnImgSave)
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -149,7 +155,7 @@ BOOL CObjectTrackingDlg::OnInitDialog()
 	//  when the application's main window is not a dialog
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
-
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -212,5 +218,44 @@ void CObjectTrackingDlg::OnBnClickedBtnImgLoad()
 		CreateBitmapInfo(m_matImage.cols, m_matImage.rows, m_matImage.channels() * 8);
 
 		DrawImage();
+	}
+}
+
+void CObjectTrackingDlg::OnBnClickedBtnImgSave()
+{
+	CFileDialog fileDlg(FALSE, _T("jpg"), NULL, OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST, _T("image file(*.jpg;*.bmp;*.png;)|*.jpg;*.bmp;*.png;|All Files(*.*)|*.*||"));
+	
+	if (m_matImage.empty())
+	{
+		AfxMessageBox(_T("이미지를 못불러왔져염"));
+		return;
+	}
+
+	if (fileDlg.DoModal() == IDOK) 
+	{
+		CString path = fileDlg.GetPathName();
+		CT2CA pszString(path);
+		std::string strPath(pszString);
+
+		cv::imwrite(strPath, m_matImage);
+	}
+
+}
+
+void CObjectTrackingDlg::OnDestroy()
+{
+	// 종료 메세지
+	CDialogEx::OnDestroy();
+
+	//// 메모리누수 해결
+	
+	//1. Open CV는 자동으로 해제 가능함.
+	//m_matImage.release();
+	 
+	//2. new로 동적할당 한것은 프로그램 끝날때 동적할당 해제.
+	if (m_pBitmapInfo != nullptr)
+	{
+		delete[] reinterpret_cast<BYTE*>(m_pBitmapInfo);
+		m_pBitmapInfo = nullptr;
 	}
 }

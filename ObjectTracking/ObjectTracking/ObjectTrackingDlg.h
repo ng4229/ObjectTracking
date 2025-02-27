@@ -42,4 +42,6 @@ protected:
 public:
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnBnClickedBtnImgLoad();
+	afx_msg void OnBnClickedBtnImgSave();
+	afx_msg void OnDestroy();
 };
